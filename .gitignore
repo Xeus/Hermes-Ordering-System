@@ -1,0 +1,6 @@
+.env
+.env_heroku
+.env_local
+procfile.dev
+node_modules
+.DS_Store

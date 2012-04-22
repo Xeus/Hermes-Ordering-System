@@ -1,0 +1,63 @@
+<TABLE ID="bodyTable"><TR><TD VALIGN="top">
+
+<CENTER>
+
+<FORM NAME="menuForm" ID="menuForm" METHOD="post" ACTION="/admin/menu/update">
+<INPUT TYPE="hidden" NAME="menuID" VALUE="<%= menu._id %>" />
+<TABLE BORDER=0 CLASS="menuSingle">
+<TR>
+<TD ALIGN="right">type of item</TD>
+<TD><SELECT NAME="menuTypeList" ID="menuTypeList">
+<% for (var i=0; i<menuTypeList.length; i++) { %>
+<OPTION VALUE="<%= menuTypeList[i] %>" <% if (menuTypeList[i] == menu.menuType) { %>SELECTED<% } %>><%= menuTypeList[i] %></OPTION>
+<% } %>
+</SELECT></TD>
+</TR>
+<TR><TD ALIGN="right" VALIGN="middle">menu name</TD>
+<TD><INPUT NAME="menuName" ID="menuName" CLASS="edit text ui-widget-content ui-corner-all" VALUE="<%= menu.menuName %>"></TD></TR>
+<TR><TD ALIGN="right" VALIGN="middle">menu item</TD>
+<TD><TEXTAREA NAME="menuDesc" ID="menuDesc" CLASS="edit text ui-widget-content ui-corner-all" ROWS=3 COLS=40><%= menu.menuDesc %></TEXTAREA></TD></TR>
+<TR><TD ALIGN="right" VALIGN="middle">cost</TD>
+<TD><INPUT TYPE="text" NAME="menuCost" ID="menuCost" VALUE="<%= menu.menuCost.toFixed(2) %>" CLASS="edit text ui-widget-content ui-corner-all" PLACEHOLDER=" no $, just x.xx" /></TD></TR>
+<TR><TD ALIGN="right" VALIGN="middle">calories</TD>
+<TD><INPUT TYPE="text" NAME="menuCalories" ID="menuCalories" VALUE="<%= menu.menuCalories %>" CLASS="edit text ui-widget-content ui-corner-all" /></TD></TR>
+<TR><TD></TD><TD><BR /><INPUT NAME="updateMenu" TYPE="submit" ID="updateMenu" VALUE="update the menu!" CLASS="glow text ui-widget-content ui-corner-all" STYLE="font-size: 17pt;" /></TD></TR></FORM>
+</TABLE>
+
+<!-- DIV confirms successful AJAX post msg -->
+<DIV ID="updated" CLASS="infoMsg text ui-widget-content ui-corner-all" STYLE="display: none; background: yellow; color: black; padding: 5px;"></DIV>
+
+</CENTER>
+
+</TD></TR></TABLE> <!-- /bodyTable -->
+
+<script type="text/javascript">
+
+$(function() {
+// loops through all menus and gives them click handlers
+	$('#updateMenu').click(function(e) {
+		console.log("Fired");
+		formData = $('#menuForm').serialize();
+		$.ajax({
+			url: "/admin/menu/update",
+			type: "POST",
+			data: formData,
+			dataType: "json",
+			success: function(response) {
+				if (response.status == "OK") {
+                    console.log("menu modified successfully, let's display it.");
+                    $("#updated").html("Updated!");
+                    $("#updated").css("display", "block");
+                }
+            }, 
+            error : function(error) {
+                console.log("There was an error updating the menu.");
+                console.log(error);
+            }
+		});
+		e.preventDefault();
+		return false;
+	});
+});
+
+</script>

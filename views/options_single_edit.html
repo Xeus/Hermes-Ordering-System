@@ -1,0 +1,62 @@
+<% for (var i=0; i<menu.menuOptions.length; i++) { %>
+
+<TABLE ID="bodyTable"><TR><TD VALIGN="top">
+
+<CENTER>
+
+<FORM NAME="optionForm<%= menu.menuOptions[i]._id %>" ID="optionForm<%= menu.menuOptions[i]._id %>" METHOD="post" ACTION="/admin/options/update">
+<INPUT TYPE="hidden" NAME="menuID" VALUE="<%= menu._id %>" />
+<INPUT TYPE="hidden" NAME="optionNameOld" VALUE="<%= menu.menuOptions[i].optionName %>" />
+<INPUT TYPE="hidden" NAME="optionID" VALUE="<%= menu.menuOptions[i]._id %>" />
+<TABLE BORDER=0 CLASS="optionSingle">
+<TR><TD ALIGN="right" VALIGN="middle">option name</TD>
+<TD><INPUT NAME="optionName" ID="optionName<%= menu.menuOptions[i]._id %>" CLASS="edit text ui-widget-content ui-corner-all" VALUE="<%= menu.menuOptions[i].optionName %>"></TD></TR>
+<TR><TD ALIGN="right" VALIGN="middle">option item</TD>
+<TD><TEXTAREA NAME="optionDesc" ID="optionDesc<%= menu.menuOptions[i]._id %>" CLASS="edit text ui-widget-content ui-corner-all" ROWS=3 COLS=40><%= menu.menuOptions[i].optionDesc %></TEXTAREA></TD></TR>
+<TR><TD ALIGN="right" VALIGN="middle">cost</TD>
+<TD><INPUT TYPE="text" NAME="optionCost" ID="optionCost<%= menu.menuOptions[i]._id %>" VALUE="<%= menu.menuOptions[i].optionCost.toFixed(2) %>" CLASS="edit text ui-widget-content ui-corner-all" PLACEHOLDER=" no $, just x.xx" /></TD></TR>
+<TR><TD></TD><TD><BR /><INPUT NAME="updateOption" TYPE="submit" ID="updateOption<%= menu.menuOptions[i]._id %>" VALUE="update the option!" CLASS="glow text ui-widget-content ui-corner-all" STYLE="font-size: 17pt;" /></TD></TR></FORM>
+</TABLE>
+
+<!-- DIV confirms successful AJAX post msg -->
+<DIV ID="updated<%= menu.menuOptions[i]._id %>" CLASS="text ui-widget-content ui-corner-all" STYLE="display: none; background: yellow; color: black; padding: 5px;"></DIV>
+
+</CENTER>
+
+</TD></TR></TABLE> <!-- /bodyTable -->
+
+<% } %>
+
+<script type="text/javascript">
+
+$(function() {
+	<% for (var i=0; i<menu.menuOptions.length; i++) { %>
+	// loops through all menus and gives them click handlers
+	$('#updateOption<%= menu.menuOptions[i]._id %>').click(function(e) {
+		console.log("Fired");
+		formData = $('#optionForm<%= menu.menuOptions[i]._id %>').serialize();
+		console.log(formData);
+		$.ajax({
+			url: "/admin/options/update",
+			type: "POST",
+			data: formData,
+			dataType: "json",
+			success: function(response) {
+				if (response.status == "OK") {
+                    console.log("option modified successfully, let's display it.");
+                    $("#updated<%= menu.menuOptions[i]._id %>").html("Updated!");
+                    $("#updated<%= menu.menuOptions[i]._id %>").fadeToggle(300);
+                }
+            }, 
+            error : function(error) {
+                console.log("There was an error updating the menu.");
+                console.log(error);
+            }
+		});
+		e.preventDefault();
+		return false;
+	});
+	<% } %>
+});
+
+</script>

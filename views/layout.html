@@ -1,0 +1,32 @@
+<HTML>
+
+<HEAD>
+<TITLE><% if (typeof pageTitle != "undefined") { %>
+           <%= pageTitle %>
+        <% } else { %>
+            Hermes Ordering System
+        <% } %></TITLE>
+<link href='http://fonts.googleapis.com/css?family=Patua+One' rel='stylesheet' type='text/css'>
+<link href='/css/main.css' rel='stylesheet' type='text/css'>
+<SCRIPT TYPE="text/javascript" SRC="/js/underscore-1.3.3-min.js"></SCRIPT>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="/js/jquery-ui-1.8.17.custom.min.js"></script>
+</HEAD>
+
+<BODY>
+
+<%- body %>
+
+<SCRIPT TYPE="text/javascript">
+$(function() {
+	$("#adminLogin").click(function(e) {
+		$("#adminHeader").load("/login");
+		return false;
+		e.preventDefault();
+	});
+});
+</SCRIPT>
+
+</BODY>
+
+</HTML>

@@ -1,0 +1,43 @@
+<html>
+<body>
+<script type="text/javascript" src="tinyphone_client.js"></script>
+<script>
+var phoneNumber = "19367551046";
+var cr = "<br/>"; //add a line break to each addition to page.
+var colors=["white","red","pink","orange","yellow","green","blue","violet","purple","black"];
+tinyphone.init("108.166.73.53",12003,phoneNumber);
+tinyphone.on('connect', function(){
+	var d = document.getElementById("connected");
+	d.innerHTML="connected to server";
+});
+tinyphone.on('disconnect', function(){
+	var d = document.getElementById("connected");
+	d.innerHTML="disconnected";
+});
+tinyphone.on('new_call', function(caller){
+	var parent = document.getElementById("call_list");
+	var newdiv = document.createElement('div');
+  	var divIdName = caller.id;
+  	newdiv.setAttribute('id',divIdName);
+  	newdiv.innerHTML = 'Caller '+caller.callerNumber;
+  	parent.appendChild(newdiv);
+});
+tinyphone.on('keypress', function(caller){
+	var keypress = caller.keypress;
+	if (keypress == '*'|| keypress == '#'){keypress='0'};
+	var keynum = parseInt(keypress);
+	document.bgColor = colors[keynum];
+});
+tinyphone.on('hangup', function(caller){
+	var d = document.getElementById("call_list");
+  	var olddiv = document.getElementById(caller.id);
+	d.removeChild(olddiv);
+});
+</script>
+<h3>
+<div id="phone_number">call <script>document.write(phoneNumber)</script></div>
+</h3>
+<div id="connected">disconnected</div>
+<div id="call_list"></div>
+</body>
+</html>

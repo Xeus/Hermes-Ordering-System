@@ -1,0 +1,17 @@
+{
+  "name": "Hermes",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "2.x",
+    "ejs": "",
+    "mongoose" : "",
+    "request" : "",
+    "mongodb" : "",
+    "connect-mongodb": "",
+    "bcrypt" : "",
+    "passport": "",
+    "passport-local": "",
+    "underscore": "",
+    "socket.io": ""
+  }
+}

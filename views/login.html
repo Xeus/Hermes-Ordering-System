@@ -1,0 +1,29 @@
+<!-- TODO: validate data, pword 8 chars -->
+
+<form method="POST" action="/login">
+<!-- hidden field will pass in any redirect variables, empty value is OK too -->
+ <input type="hidden" name="redirect" value="<%= redirect %>">
+
+<CENTER><TABLE WIDTH="100%" HEIGHT="100%" CLASS="login" BORDER=0><TR><TD VALIGN="top" ALIGN="center" WIDTH="50%">
+<BR /><BR /><BR /><BR /><SPAN CLASS="header">admin dashboard</SPAN><BR /><BR />
+<TABLE BORDER=0 CELLPADDING=20><TR><TD ALIGN="right">email</TD><TD><input type="text" name="email" id="email" class="login" placeholder=" email@email.com"></TD></TR>
+<TR><TD ALIGN="right">password</TD><TD><input type="password" name="password" id="password" class="login" placeholder=" (at least 8 chars)"></TD></TR>
+<TR><TD COLSPAN=2 ALIGN="center">
+<BUTTON TYPE="submit" NAME="login" CLASS="login">login</BUTTON>
+</TD></TR></TABLE>
+</TD><TD VALIGN="top" ALIGN="center" WIDTH="50%">
+<BR /><BR /><BR /><BR /><BR /><BR />
+<BUTTON ID="register" NAME="register" class="login">...or register</BUTTON>
+</form>
+</TD></TR>
+<TR><TD COLSPAN=2 ALIGN="center" STYLE="height: 1em;">powered by Hermes</TD></TR>
+</TABLE></CENTER>
+
+<SCRIPT TYPE="text/javascript">
+$(function() {
+	$("#register").click(function() {
+		window.location = '/register';
+		return false;
+	});
+});
+</SCRIPT>

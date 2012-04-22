@@ -1,0 +1,18 @@
+HTML, BODY, INPUT, BUTTON, SELECT, OPTION { font-family: 'Patua One', cursive; }
+HTML, BODY { background: #012340; color: white; padding: 0px; margin: 0px; }
+P { font-size: 20pt; text-align: justify;}
+#header, #footer { background: #026873; color: #F2F0CE; }
+.menuSide { margin: 0px auto; width: 100%; }
+.menu { margin: 0px auto; font-size: 50pt; }
+.menuBill { font-size: 30pt; height: 1em; text-align: center;}
+#phone_number { font-size: 70pt; margin: 0px auto; width: 100%; text-align: center; }
+.ext { font-family: Monaco; font-weight: bold; font-size: 45pt; }
+A { color: white; text-decoration: none;}
+.login, .login TD { font-size: 30pt; }
+.header { color: #F2F0CE; font-weight: bold;}
+.infoMsg { background: yellow; color: black; padding: 5px; }
+.formTable, .formTable TD, .formTable TD INPUT, .formTable TD SELECT, #bodyTable { font-size: 20pt;}
+.user { position: relative; margin: 0px; }
+#bodyCell { padding: 20px;}
+.currentOrder { font-size: 15pt; }
+.headline { font-size: 15pt;}

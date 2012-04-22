@@ -1,0 +1,45 @@
+<CENTER>
+
+<TABLE BORDER=0 CELLPADDING=10><TR><TD VALIGN="middle"><H2>Welcome. Let's get rockin'.</H2></TD></TR></TABLE><BR />
+
+<TABLE ID="bodyTable"><TR><TD VALIGN="top">
+
+<DIV ID="body"><CENTER>
+<TABLE BORDER=0 CELLPADDING=30><TR><TD VALIGN="bottom" ALIGN="right">
+<SPAN CLASS="flowName" TITLE="If you specify a name, other people can join your Karaoke Flow on other clients!">unique flow name (optional)<BR />
+<FORM NAME="newFlowForm" METHOD="post" ACTION="/createnew"><INPUT TYPE="text" ID="newFlowName" NAME="newFlowName" CLASS="text ui-widget-content ui-corner-all" /></SPAN></TD><TD>
+<BUTTON ID="newFlowButton" CLASS="glow">make a new karaoke flow!</BUTTON></FORM>
+</TD></TR>
+<TR><TD ALIGN="right"><SPAN CLASS="flowName" TITLE="Has someone else already made a Karaoke Flow that you want to join?">...or specify existing room name<BR />
+<FORM NAME="newFlowForm" METHOD="post" ACTION="/create"><INPUT TYPE="text" ID="flowName" NAME="flowName" CLASS="text ui-widget-content ui-corner-all" /></SPAN></TD><TD><BUTTON ID="joinFlowButton" CLASS="glow">join existing karaoke flow!</BUTTON></FORM></TD></TR>
+<TR><TD ALIGN="right"></TD><TD><BUTTON ID="randomButton" CLASS="glow text ui-widget-content ui-corner-all">perform a randomized flow</BUTTON></FORM></TD></TR>
+</TABLE>
+</CENTER></DIV>
+
+</TD></TR></TABLE>
+
+<script type="text/javascript">
+
+$(function() {
+	$("#newFlowButton").button().click(function() {
+		$("#newFlowForm").submit();
+	});
+	$("#joinFlowButton").button().click(function() {
+		$("#flowForm").submit();
+	});
+	$("#randomButton").button().click(function() {
+		window.location = '/perform/random';
+	});
+	$("#help").button({
+        icons: {
+            primary: "ui-icon-help"
+        },
+        text: false
+    }).click(function () {
+    	$("#dialog").dialog({ title: "instructions", width: 400 });
+	});
+	var flowList = [<% for (var i=0;i<activeFlowNames.length;i++) { %>"<%= activeFlowNames[i] %>",<% } %>];
+	$("#flowName").autocomplete({ source: flowList });
+});
+
+</script>

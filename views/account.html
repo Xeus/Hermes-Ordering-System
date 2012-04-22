@@ -1,0 +1,16 @@
+<p>Hello <%= currentUser.name.first %></p>
+
+<hr/>
+<% if (typeof(message) != "undefined") { %>
+<p><%= message %></p>
+<hr>
+<% } %>
+<h3>Change password</h3>
+<form method="POST" action="/account/changepassword">
+    New Password : <input type="password" name="password"><br>
+    Type Password again: <input type="password" name="password2"><br>
+    <br>
+    <input type="submit" name="submit" value="Change Password">
+</form>
+    
+<p><a href="/logout">Logout</a></p>

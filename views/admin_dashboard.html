@@ -1,0 +1,171 @@
+<CENTER>
+
+<H2 CLASS="header formTable">Admin Dashboard</H2>
+
+<TABLE ID="bodyTable" WIDTH="80%"><TR><TD VALIGN="top">
+
+<H4 CLASS="header formTable">menu list (see <A HREF="/menu/json">JSON</A>)</H4>
+
+<UL>
+<!-- need to refresh this upon AJAX refresh -->
+<% for (var i=0; i<menu.length; i++) { %>
+<LI><DIV CLASS="showMenu" ID="menu<%= i %>"><%= menu[i].menuName %> <SPAN STYLE="font-size: 8pt; font-family: Arial;">[ <A HREF="#" ID="menuLink<%= i %>">edit</A> ]</SPAN> 
+<DIV ID="menuContents<%= i %>" STYLE="display: none;">menu item</DIV><DIV ID="optionsContents<%= i %>" STYLE="display: none;"></DIV>
+</DIV></LI>
+<% } %>
+</UL>
+
+</TD>
+<TD VALIGN="top">
+
+<CENTER>
+
+<H4 CLASS="header formTable">add item</H4>
+
+<FORM NAME="addMenuForm" ID="addMenuForm" ACTION="/admin" METHOD="post">
+
+<TABLE BORDER=0 CLASS="formTable">
+<TR>
+<TD ALIGN="right">type of item</TD>
+<TD><SELECT NAME="menuTypeList" ID="menuTypeList">
+<% for (var i=0; i<menuTypeList.length; i++) { %>
+<OPTION VALUE="<%= menuTypeList[i] %>"><%= menuTypeList[i] %></OPTION>
+<% } %>
+</SELECT></TD>
+</TR>
+<TR>
+<TD ALIGN="right">name</TD>
+<TD><INPUT TYPE="text" NAME="menuName" ID="menuName" /></TD>
+</TR>
+<TR>
+<TD ALIGN="right">description</TD>
+<TD><INPUT TYPE="text" NAME="menuDesc" ID="menuDesc" /></TD>
+</TR>
+<TR>
+<TD ALIGN="right">cost</TD>
+<TD><INPUT TYPE="text" NAME="menuCost" ID="menuCost" PLACEHOLDER=" no $, just x.xx" /></TD>
+</TR>
+<TR>
+<TD ALIGN="right">calories</TD>
+<TD><INPUT TYPE="text" NAME="menuCalories" ID="menuCalories" /></TD>
+</TR>
+<TR><TD></TD><TD><BR /><BUTTON CLASS="formTable" TYPE="submit" NAME="menuSubmit" ID="menuSubmit" STYLE="align:left;">submit</BUTTON></TD></TR>
+</TABLE>
+
+</FORM>
+
+<DIV ID="addMenuSuccess" CLASS="infoMsg" STYLE="display: none;"></DIV>
+
+<HR NOSHADE SIZE=1>
+
+<H4 CLASS="header formTable">add option (sides, extras, etc.)</H4>
+
+<FORM NAME="addOptionForm" ID="addOptionForm" ACTION="/admin" METHOD="post">
+
+<TABLE BORDER=0 CLASS="formTable">
+<TR>
+<TD ALIGN="right">belongs to</TD>
+<TD><SELECT NAME="optionMenuList" ID="optionMenuList">
+<% for (var i=0; i<menu.length; i++) { %>
+<OPTION VALUE="<%= menu[i]._id %>"><%= menu[i].menuName %></OPTION>
+<% } %>
+</SELECT></TD>
+</TR>
+<TR>
+<TD ALIGN="right">name</TD>
+<TD><INPUT TYPE="text" NAME="optionName" ID="optionName" /></TD>
+</TR>
+<TR>
+<TD ALIGN="right">description</TD>
+<TD><INPUT TYPE="text" NAME="optionDesc" ID="optionDesc" /></TD>
+</TR>
+<TR>
+<TD ALIGN="right">cost</TD>
+<TD><INPUT TYPE="text" NAME="optionCost" ID="optionCost" PLACEHOLDER=" no $, just x.xx" /></TD>
+</TR>
+
+<TR><TD></TD><TD><BR /><BUTTON CLASS="formTable" TYPE="submit" NAME="optionSubmit" ID="optionSubmit" STYLE="align:left;">submit</BUTTON></TD></TR>
+</TABLE>
+
+</FORM>
+
+<DIV ID="addOptionSuccess" CLASS="infoMsg" STYLE="display: none;"></DIV>
+
+</CENTER>
+
+</TD>
+</TR></TABLE> <!-- /bodyTable -->
+
+</CENTER>
+
+<script type="text/javascript">
+
+$(function() {
+	<% for (var i=0; i<menu.length; i++) { %>
+	$("#menuLink<%= i %>").click(function() {
+		if ($("#menuLink<%= i %>").html() == "edit") {
+			$("#menuLink<%= i %>").html("hide");
+			$("#menuContents<%= i %>").load("/admin/menu/<%= menu[i]._id %>/edit");
+            $("#optionsContents<%= i %>").load("/admin/options/<%= menu[i]._id %>/edit");
+        }
+		else {
+			$("#menuLink<%= i %>").html("edit");
+			$("#menu<%= i %>").css("border-width", "0px");
+		}
+		$("#menuContents<%= i %>").toggle();
+        $("#optionsContents<%= i %>").toggle();
+	});
+	<% } %>
+	$("#menuSubmit").click(function() {
+ 		jQuery.ajax({
+            url : '/admin/menu/add',
+            type : 'POST',
+            data : $("#addMenuForm").serialize(), 
+            dataType : 'json',
+            
+            success : function(response) {
+                if (response.status == "OK") {
+                    console.log("menu item added successfully, let's display it");
+                    $("#addMenuSuccess").html("Item added successfully!");
+                    $("#addMenuSuccess").fadeToggle(300).delay(3000).fadeToggle(300);
+                    //clear the form
+                    jQuery("input[name='menuName'],input[name='menuCalories'],input[name='menuCost'],input[name='menuDesc']").val('');
+                }
+                
+            }, 
+            error : function(error) {
+                console.log("There was an error");
+                console.log(error);
+            }
+            
+        });
+        return false;
+	});
+    $("#optionSubmit").click(function() {
+        jQuery.ajax({
+            url : '/admin/options/add',
+            type : 'POST',
+            data : $("#addOptionForm").serialize(), 
+            dataType : 'json',
+            
+            success : function(response) {
+                if (response.status == "OK") {
+                    console.log("option item added successfully, let's display it");
+                    $("#addOptionSuccess").html("Item added successfully!");
+                    $("#addOptionSuccess").fadeToggle(300).delay(3000).fadeToggle(300);
+                    //clear the form
+                    jQuery("input[name='optionName'],input[name='optionCost'],input[name='optionDesc']").val('');
+                }
+                
+            }, 
+            error : function(error) {
+                console.log("There was an error");
+                console.log(error);
+            }
+            
+        });
+        return false;
+    });
+});
+
+</script>

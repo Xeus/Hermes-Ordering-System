@@ -1,0 +1,25 @@
+<html>
+<body>
+<script type="text/javascript" src="tinyphone_client.js"></script>
+<script>
+var phoneNumber = "19367551046";
+var cr = "<br/>"; //add a line break to each addition to page.
+tinyphone.init("108.166.73.53",12003,phoneNumber);
+tinyphone.on('connect', function(){
+	document.write("connected to tinyphone with phone number "+tinyphone.phoneNumber+cr);
+});
+tinyphone.on('new_call', function(caller){
+	document.write("new caller "+caller.callerNumber+", id "+caller.id+cr);
+});
+tinyphone.on('keypress', function(caller){
+	document.write("received keypress '"+caller.keypress+"' from "+caller.callerNumber+cr);
+});
+tinyphone.on('audio_level', function(caller){
+	document.write("received audio level '"+caller.audioLevel+"' from "+caller.callerNumber);
+});
+tinyphone.on('hangup', function(caller){
+	document.write("caller "+caller.callerNumber+"( id "+caller.id+") hung up"+cr);
+});
+</script>
+</body>
+</html>
