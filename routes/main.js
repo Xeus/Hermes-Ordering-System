@@ -86,9 +86,9 @@ module.exports = {
             // send the message and get a callback with an error or details of the message that was sent
             server.send({
                 text:    orderText, 
-                from:    "Hermes Ordering Front-End <" + MAIL_FROM + ">", 
-                to:      "Hermes Order Confirm <" + MAIL_TO + ">",
-                cc:      "Admin <" + MAIL_CC + ">",
+                from:    "Hermes Ordering Front-End <" + process.env.MAIL_FROM + ">", 
+                to:      "Hermes Order Confirm <" + process.env.MAIL_TO + ">",
+                cc:      "Admin <" + process.env.MAIL_CC + ">",
                 subject: "Order Confirmation"
             }, function(err, message) {
                 console.log(err || message);
