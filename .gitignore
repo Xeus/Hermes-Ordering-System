@@ -4,3 +4,4 @@
 procfile.dev
 node_modules
 .DS_Store
+other/

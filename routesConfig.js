@@ -27,7 +27,7 @@ module.exports = function(app) {
     app.get('/', mainRoute.intro);
     app.get('/menu', mainRoute.menu);
     app.get('/about', mainRoute.about);
-
+    app.post('/emailConfirm', mainRoute.emailConfirm);
 
 
     // ROUTES: admin.js

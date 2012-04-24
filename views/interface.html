@@ -31,6 +31,146 @@ tinyphone.on('hangup', function(caller){
 	d.removeChild(olddiv);
 });
 
+var menuMainObj = {
+	name : "Main Menu",
+	upMenu : "Main",
+	currentMenu : "Main",
+	id : "",
+	p : ["", "Order Food/Drinks", "Play Games", "Get News Updates", "Social"],
+	pClick : ["", "Food", "Games", "News", "Social"]
+}
+
+var menuFoodObj = {
+	name : "Food/Drinks Menu",
+	upMenu : "Main",
+	currentMenu : "Food",
+	id : "",
+	p : ["", "Beer", "Wine", "Liquor", "Non-Alcoholic Drinks", "Water", "Burger", "Specials", "Chips & Salsa"],
+	pClick : ["", "Beer", "Wine", "Liquor", "Other", "Water", "Burger", "Specials", "Chips"]
+}
+
+var menuGamesObj = {
+	name : "Games Menu",
+	upMenu : "Main",
+	currentMenu : "Games",
+	id : "",
+	p : ["", "Trivia", "Tetris"],
+	pClick : ["", "Trivia", "Tetris"]
+}
+
+var menuSocialObj = {
+	name : "Social Menu",
+	upMenu : "Main",
+	currentMenu : "Social",
+	id : "",
+	p : ["", "Send Drinks", "Flirt", "Record a Shout-Out"],
+	pClick : ["", "SendDrinks", "Flirt", "ShoutOut"]
+}
+
+var menuSendDrinksObj = {
+	name : "Send Drinks Menu",
+	upMenu : "Social",
+	currentMenu : "SendDrinks",
+	id : "",
+	p : ["", "Choose Table", "Choose Drinks", "Send Drinks"],
+	pClick : ["", "ChooseSendTable", "Food", "SendOrder"]
+}
+
+var menuChooseSendTableObj = {
+	name : "Choose a Table",
+	type : "checkTable",
+	upMenu : "SendDrinks",
+	currentMenu : "ChooseSendTable",
+	id : "",
+	p : ["", "Table #1", "Table #2", "Table #3", "Table #4"],
+	pClick : [0, 1, 2, 3, 4]
+}
+
+var menuChooseFlirtTableObj = {
+	name : "Choose a Table",
+	type : "checkTable",
+	upMenu : "Flirt",
+	currentMenu : "ChooseFlirtTable",
+	id : "",
+	p : ["", "Table #1", "Table #2", "Table #3", "Table #4"],
+	pClick : [0, 1, 2, 3, 4]
+}
+
+var menuFlirtObj = {
+	name : "Flirt Menu",
+	upMenu : "Social",
+	currentMenu : "Flirt",
+	id : "",
+	p : ["", "Choose Table", "Choose Message", "Send Message"],
+	pClick : ["", "ChooseFlirtTable", "FlirtMsg", "SendFlirtMsg"]
+}
+
+var menuFlirtMsgObj = {
+	name : "Flirt Message Menu",
+	type : "flirtMsg",
+	upMenu : "Flirt",
+	currentMenu : "FlirtMsg",
+	id : "",
+	p : ["", "Bored. Wanna play?", "Buy me a drink?", "How's it going?", "I like your outfit!", "Cheers!"],
+	pClick : [0, 1, 2, 3, 4, 5]
+}
+
+var menuShoutOutObj = {
+	name : "Shout-Out Menu",
+	upMenu : "Social",
+	currentMenu : "ShoutOut",
+	id : "",
+	p : ["", "Record", "Save Shout-Out"],
+	pClick : ["", "RecordShoutOut", "SaveShoutOut"]
+}
+
+var menuBeerObj = {
+	name : "Beer Menu",
+	type : "product",
+	upMenu : "Food",
+	currentMenu : "Beer",
+	id : ["", <% for (var i=0; i<menu.length; i++) { if (menu[i].menuType == "Beer") { %>"<%= menu[i]._id %>", <% } } %>],
+	p : ["", <% for (var i=0; i<menu.length; i++) { if (menu[i].menuType == "Beer") { %>"<%= menu[i].menuName %>", <% } } %>]
+}
+
+var menuWineObj = {
+	name : "Wine Menu",
+	type : "product",
+	upMenu : "Food",
+	currentMenu : "Wine",
+	id : ["", <% for (var i=0; i<menu.length; i++) { if (menu[i].menuType == "Wine") { %>"<%= menu[i]._id %>", <% } } %>],
+	p : ["", <% for (var i=0; i<menu.length; i++) { if (menu[i].menuType == "Wine") { %>"<%= menu[i].menuName %>", <% } } %>]
+}
+
+var menuLiquorObj = {
+	name : "Liquor Menu",
+	type : "product",
+	upMenu : "Food",
+	currentMenu : "Liquor",
+	id : ["", <% for (var i=0; i<menu.length; i++) { if (menu[i].menuType == "Liquor") { %>"<%= menu[i]._id %>", <% } } %>],
+	p : ["", <% for (var i=0; i<menu.length; i++) { if (menu[i].menuType == "Liquor") { %>"<%= menu[i].menuName %>", <% } } %>]
+}
+
+var menuCheckOrderObj = {
+	name : "Check Your Order & Tab",
+	type : "orderTab",
+	upMenu : "Main",
+	currentMenu : "CheckOrder",
+	id : "",
+	p : ["", "Place Order", "Cancel Order", "Close Your Tab", ""],
+	pClick : ["", "user[userNum].placeOrder();", "user[userNum].cancelOrder();", "user[userNum].closeTab();"],
+	statusMsg : "Order sent!"
+}
+
+var menuTriviaObj = {
+	name : "Trivia Menu",
+	type : "trivia",
+	upMenu : "Games",
+	currentMenu : "Trivia",
+	id : "",
+	p : ["", "A1", "A2", "A3", "A4", "Get New Question", "Quit"]
+}
+
 <%
 for (var i=0; i<menu.length; i++) {
 	if (menu[i].menuName == "Burger") {
@@ -39,11 +179,39 @@ for (var i=0; i<menu.length; i++) {
 }
 %>
 
+var menuNewsObj = {};
+
+var getNews = function(userNum) {
+	$.ajax({
+		url: "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&topic=h&rsz=8",
+		type: "GET",
+		dataType : 'jsonp',
+    	jsonp : 'callback',
+		success: function(response) {
+            var newsList = response.responseData.results;
+            var menuNewsObj = {
+				name : "News Headlines",
+				upMenu : "Main",
+				currentMenu : "News",
+				id : "",
+				p : ["", <% for (var i=0; i<8; i++) { %>newsList[<%= i %>].title, <% } %>]
+			}
+			user[userNum].upMenu = "Main";
+			user[userNum].currentMenu = "News";
+			fillMenu(userNum, menuNewsObj);
+        }, 
+        error : function(error) {
+            console.log("There was an error fetching the JSON.");
+            console.log(error);
+        }
+	});
+};
+
 function User(userNum) {
 	var self = this;
 
-	this.upMenu = "#user" + userNum + "_menuMain";
-	this.currentMenu = "#user" + userNum + "_menuMain";
+	this.upMenu = "Main";
+	this.currentMenu = "Main";
 
 <%
 for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
@@ -51,34 +219,39 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 %>	this.menuFood6_select<%= k %> = false;
 <% } %>
 
-	// a list of all the menu DIVs
-	// used by clearMenusX() to make DIVs invisible when menus change
-	eval("this.menuList = ['#user" + userNum + "_menuMain', '#user" + userNum + "_menuBeer', '#user" + userNum + "_menuWine', '#user" + userNum + "_menuLiquor','#user" + userNum + "_menuFood', '#user" + userNum + "_menuFood6', '#user" + userNum + "_currentOrder', '#user" + userNum + "_menuBeer1', '#user" + userNum + "_menuPurchase', '#user" + userNum + "_menuNews', '#user" + userNum + "_menuGames', '#user" + userNum + "_menuTrivia']");
-
 	this.order = {
-		toBuy : []
+		toBuy : [],
+		toTable : 0
+		// TODO: reset after order is sent, because if you send
+		// drinks to other people, variable changes
 	};
 	this.tab = {
 		toBuy : []
 	};
-
-	this.clearMenus = function(userNum) {
-		for (var i=0;i<self.menuList.length;i++) {
-			$(self.menuList[i]).css("display","none");
-		}
-	};
+	this.flirt = {
+		toTable : 0,
+		msg : 0
+	}
 
 	this.buy = function(itemID) {
 		this.order.toBuy.push(itemID);
 		this.getMenu(this.order.toBuy);
+		$("#user" + userNum + "_pMsg").html('Added to order!');
+		$("#user" + userNum + "_pMsg").css('display','block');
 	};
+	// TODO: seems to be removing wrong items if right items all gone
 	this.remove = function(itemID) {
 		this.order.toBuy.pop(itemID);
 		this.getMenu(this.order.toBuy);
+		$("#user" + userNum + "_pMsg").html('Removed from order!');
+		$("#user" + userNum + "_pMsg").css('display','block');
 	};
 	// not very secure, move to db
 	this.printOrder = function(menu, toBuy) {
 		var newHTML = "<B>Your Current Open Order:</B><BR />";
+		if (user[userNum].order.toBuy.toTable != 0 && user[userNum].order.toBuy.toTable != undefined) {
+			newHTML += "(will be sent to Table #" + user[userNum].order.toBuy.toTable + ")<BR />";
+		}
 		var totalCost = 0;
 		var found = false;
 		for (var i=0; i<menu.length; i++) {
@@ -98,13 +271,65 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 		$("#user" + userNum + "_currentOrder").html(newHTML);
 		$("#user" + userNum + "_currentOrder").css('display','block');
 	};
-	this.printNews = function(newsList) {
-		for (var i=0; i<8; i++) {
-			var j=i+1;
-			$("#user" + userNum + "_headline" + j).html(newsList[i].title);
-		}
-		$("#user" + userNum + "_menuNews").css('display','block');
-	};
+	// TODO: should just generate order and pass to tab
+	this.placeOrder = function() {
+		$.ajax({
+            url : '/emailConfirm',
+            type : 'POST',
+            data : this.order, 
+            dataType : 'json',
+            
+            success : function(response) {
+                if (response.status == "OK") {
+                    console.log("order sent");
+                    $("#user" + userNum + "_pMsg").html("Your order has been placed!");
+					$("#user" + userNum + "_pMsg").css('display','block');
+					$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
+					$("#user" + userNum + "_currentOrder").css('display','block');
+					user[userNum].order = { toBuy : [], toTable : 0 };
+					user[userNum].tab = { toBuy : [] };
+                }
+            }, 
+            error : function(error) {
+                console.log("There was an error");
+                console.log(error);
+            }
+            
+        });
+	}
+	this.cancelOrder = function() {
+		user[userNum].order = { toBuy : [], toTable : 0 };
+		$("#user" + userNum + "_pMsg").html("Order canceled!");
+		$("#user" + userNum + "_pMsg").css('display','block');
+		$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
+		$("#user" + userNum + "_currentOrder").css('display','block');
+	}
+	// TODO: fix this for tab and not just for order
+	this.closeTab = function() {
+		$.ajax({
+            url : '/emailConfirm',
+            type : 'POST',
+            data : this.order, 
+            dataType : 'json',
+            
+            success : function(response) {
+                if (response.status == "OK") {
+                    console.log("order sent");
+                    $("#user" + userNum + "_pMsg").html("Your tab has been closed! Please go pay. :)");
+					$("#user" + userNum + "_pMsg").css('display','block');
+					$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
+					$("#user" + userNum + "_currentOrder").css('display','block');
+					user[userNum].order = { toBuy : [], toTable : 0 };
+					user[userNum].tab = { toBuy : [] };
+                }
+            }, 
+            error : function(error) {
+                console.log("There was an error");
+                console.log(error);
+            }
+            
+        });
+	}
 	this.getMenu = function(toBuy) {
 		$.ajax({
 			url: "/menu/json",
@@ -123,54 +348,67 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 	        }
 		});
 	};
-	this.getNews = function() {
-		$.ajax({
-			url: "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&topic=h&rsz=8",
-			type: "GET",
-			dataType : 'jsonp',
-        	jsonp : 'callback',
-			success: function(response) {
-				console.log(response);
-	            var newsList = response.responseData.results;
-	            self.printNews(newsList);
-	        }, 
-	        error : function(error) {
-	            console.log("There was an error fetching the JSON.");
-	            console.log(error);
-	        }
-		});
+	this.updateNav = function(menuCurrent) {
+		eval("user[userNum].upMenu = menu" + menuCurrent + "Obj.upMenu");
+		eval("user[userNum].currentMenu = menu" + menuCurrent + "Obj.currentMenu");
+	}
+	this.loadMenu = function(menuCurrent) {
+		this.updateNav(menuCurrent);
+		eval("var newMenuObj = menu" + menuCurrent + "Obj");
+		$("#user" + userNum + "_pMsg").css('display','none');
+		if (menuCurrent != "News") {
+			for (var i=1; i<=8; i++) {
+				$("#user" + userNum + "_" + i).css('font-size', '30pt');
+			}
+			fillMenu(userNum, newMenuObj);
+		}
+		else {
+			getNews(userNum);
+			for (var i=1; i<=8; i++) {
+				$("#user" + userNum + "_" + i).css('font-size', '15pt');
+			}
+		}
+		if (menuCurrent == "CheckOrder") {
+			$("#user" + userNum + "_currentOrder").css('display','block');
+		}
+		else {
+			$("#user" + userNum + "_currentOrder").css('display','none');
+		}
 	};
-	this.loadMenu = function(menuUp, menuCurrent) {
-		self.upMenu = "#user" + userNum + "_" + menuUp;
-		self.currentMenu = "#user" + userNum + "_" + menuCurrent;
-		self.clearMenus(userNum);
-		$("#user" + userNum + "_" + menuCurrent).css("display","block");
-	};
-	this.viewItem = function(menuType, menuName, menuID) {
-		self.upMenu = "#user" + userNum + '_menu' + menuType;
-		self.currentMenu = "#user" + userNum + '_menuPurchase';
-		self.clearMenus(userNum);
-		$("#user" + userNum + "_menuPurchaseName").html(menuName);
-		$("#user" + userNum + "_menuPurchaseID").html(menuID);
-		$("#user" + userNum + "_menuPurchase").css("display","block");
+	this.viewItem = function(currentMenu, menuName, menuID) {
+		$("#user" + userNum + "_pName").html(menuName);
+		$("#user" + userNum + "_pName").attr("title", menuID);
+		user[userNum].updateNav(currentMenu);
+		console.log(currentMenu);
+		var viewTree = ["Add", "Remove"];
+		for (var i=1; i<=8; i++) {
+			$("#user" + userNum + "_choice" + i).css('display','none');
+		}
+		for (var j=0; j<viewTree.length; j++) {
+			var k = j+1;
+			$("#user" + userNum + "_" + k).html(viewTree[j]);
+			$("#user" + userNum + "_goto" + 1).attr("onclick", "user[" + userNum + "].buy('" + menuID + "');");
+			$("#user" + userNum + "_goto" + 2).attr("onclick", "user[" + userNum + "].remove('" + menuID + "');");
+			$("#user" + userNum + "_choice" + k).css('display','block');
+		}
 	};
 	this.keyProc = function(keypress) {
 		if (self.currentMenu == "#user" + userNum + "_menuMain") {
 			switch(keypress) {
-				case "1" : loadMenu('menuMain', 'menuFood'); break;
-				case "2" : loadMenu('menuMain', 'menuGames'); break;
-				case "3" : loadMenu('menuMain', 'menuNews'); break;
-				case "4" : loadMenu('menuMain', 'menuSocial'); break;
+				case "1" : loadMenu('Food'); break;
+				case "2" : loadMenu('Games'); break;
+				case "3" : loadMenu('News'); break;
+				case "4" : loadMenu('Social'); break;
 				default : console.log("No command found!"); // TODO: error voice msg
 			}
 		}
 		else if (self.currentMenu == "#user" + userNum + "_menuFood") {
 			switch(keypress) {
-				case "1" : loadMenu('menuFood', 'menuBeer'); break;
-				case "2" : loadMenu('menuFood', 'menuWine'); break;
-				case "3" : loadMenu('menuFood', 'menuLiquor'); break;
-				case "4" : loadMenu('menuFood', 'menuOther'); break;
-				case "5" : loadMenu('menuFood', 'menuWater'); break;
+				case "1" : loadMenu('Beer'); break;
+				case "2" : loadMenu('Wine'); break;
+				case "3" : loadMenu('Liquor'); break;
+				case "4" : loadMenu('Other'); break;
+				case "5" : loadMenu('Water'); break;
 				default : console.log("No command found!");
 			}
 		}
@@ -183,103 +421,152 @@ for (var i=1; i<=4; i++) {
 	user[i] = new User(i);
 }
 
+var checkTable = function(userNum, tableNum) {
+	var baseMsg = "Table #" + tableNum;
+	if (user[userNum].order.toBuy.toTable != tableNum) {
+		for (var i=1;i<=4;i++) {
+			$('#user' + userNum + "_" + i).html("Table #" + i);
+		}
+		user[userNum].order.toBuy.toTable = tableNum;
+		var tempMsg = baseMsg + " <SPAN STYLE='color: yellow;'>(Selected)</SPAN>";
+		$('#user' + userNum + "_" + tableNum).html(tempMsg);
+	}
+	else {
+		user[userNum].order.toBuy.toTable = 0;
+		$('#user' + userNum + "_" + tableNum).html(baseMsg);
+	}
+}
+
+var flirtMsg = function(userNum, msgNum) {
+	var baseMsg = menuFlirtMsgObj.p[msgNum];
+	if (user[userNum].flirt.msg != msgNum) {
+		for (var i=1; i<=menuFlirtMsgObj.p.length; i++) {
+			$('#user' + userNum + "_" + i).html(menuFlirtMsgObj.p[i]);
+		}
+		user[userNum].flirt.msg = msgNum;
+		var tempMsg = baseMsg + " <SPAN STYLE='color: yellow;'>(Selected)</SPAN>";
+		$('#user' + userNum + "_" + msgNum).html(tempMsg);
+	}
+	else {
+		user[userNum].flirt.msg = 0;
+		$('#user' + userNum + "_" + msgNum).html(baseMsg);
+	}
+}
+
+var fillMenu = function(userNum, newObj) {
+	$("#user" + userNum + "_pName").html(newObj.name);
+	$("#user" + userNum + "_pName").attr("title", newObj.id);
+	$("#user" + userNum + "_diagram").css('display','none');
+	for (var i=1; i<=8; i++) {
+		if (newObj.p[i]) {
+			if (newObj.type == "product") {
+				var clickFunc = "user[" + userNum + "].viewItem('" + newObj.currentMenu + "', '" + newObj.p[i] + "', '" + newObj.id[i] + "');";
+				$("#user" + userNum + "_" + i).html(newObj.p[i]);
+			}
+			else if (newObj.type == "orderTab") {
+				switch (i) {
+					case 1 :
+						var clickFunc = "user[" + userNum + "].placeOrder();";
+						$("#user" + userNum + "_" + i).html(newObj.p[i]);
+						break;
+					case 2 :
+						var clickFunc = "user[" + userNum + "].cancelOrder();";
+						$("#user" + userNum + "_" + i).html(newObj.p[i]);
+						break;
+					case 2 :
+						var clickFunc = "user[" + userNum + "].closeTab();";
+						$("#user" + userNum + "_" + i).html(newObj.p[i]);
+						break;
+				}
+			}
+			else if (newObj.type == "checkTable") {
+				$("#user" + userNum + "_diagram").css('display','block');
+				var clickFunc = "checkTable(" + userNum + ", " + newObj.pClick[i] + ");";
+				if (user[userNum].order.toBuy.toTable == newObj.pClick[i]) {
+					$("#user" + userNum + "_" + i).html(newObj.p[i] + " <SPAN STYLE='color: yellow;'>(Selected)</SPAN>");
+				}
+				else {
+					$("#user" + userNum + "_" + i).html(newObj.p[i]);
+				}
+			}
+			else if (newObj.type == "flirtMsg") {
+				var clickFunc = "flirtMsg(" + userNum + ", " + newObj.pClick[i] + ");";
+				if (user[userNum].flirt.msg == newObj.pClick[i]) {
+					$("#user" + userNum + "_" + i).html(newObj.p[i] + " <SPAN STYLE='color: yellow;'>(Selected)</SPAN>");
+				}
+				else {
+					$("#user" + userNum + "_" + i).html(newObj.p[i]);
+				}
+			}
+			else if ("pClick" in newObj) {
+				var clickFunc = "user[" + userNum + "].loadMenu('" + newObj.pClick[i] + "');";
+				$("#user" + userNum + "_" + i).html(newObj.p[i]);
+			}
+			else {
+				var clickFunc = "user[" + userNum + "].loadMenu('" + newObj.currentMenu + "');";
+				$("#user" + userNum + "_" + i).html(newObj.p[i]);
+			}
+			if ("id" in newObj) {
+				$("#user" + userNum + "_goto" + i).attr("title", newObj.id[i]);
+			}
+
+			$("#user" + userNum + "_goto" + i).attr("onClick", clickFunc);
+			$("#user" + userNum + "_choice" + i).css('display','block');
+		}
+		else if (newObj.type == "trivia") {
+			getTrivia(userNum);
+		}
+		else {
+			$("#user" + userNum + "_choice" + i).css('display','none');
+		}
+	}
+}
+
+var trivia = [
+	{
+		id : 0,
+		q : "What is the capital of Mongolia?",
+		a : "Ulan Bator",
+		a1 : "Tashkent",
+		a2 : "Kathmandu",
+		a3 : "Nangahar",
+		a4 : "Ulan Bator"
+	},
+	{
+		id : 1,
+		q : "Who was the first 'Accidental President'?",
+		a : "John Q. Adams",
+		a1 : "John Tyler",
+		a2 : "Gerald Ford",
+		a3 : "John Q. Adams",
+		a4 : "James Garfield",
+	}
+];
+
+var getTrivia = function(userNum) {
+	var randomQNum = $.newQuestionNum();
+	$("#user" + userNum + "_pName").html(trivia[randomQNum].q);
+	$("#user" + userNum + "_pName").attr("title", trivia[randomQNum].a);
+	for (var j=1; j<=4; j++) {
+		var clickFunc = "$.checkAnswer(" + userNum + ", " + j + ");";
+		$("#user" + userNum + "_goto" + j).attr("onClick", clickFunc);
+		$("#user" + userNum + "_choice" + j).css('display','block');
+	}
+	$("#user" + userNum + "_1").html(trivia[randomQNum].a1);
+	$("#user" + userNum + "_2").html(trivia[randomQNum].a2);
+	$("#user" + userNum + "_3").html(trivia[randomQNum].a3);
+	$("#user" + userNum + "_4").html(trivia[randomQNum].a4);
+	$("#user" + userNum + "_5").html("Get New Question");
+	$("#user" + userNum + "_6").html("Quit");
+	$("#user" + userNum + "_choice" + 5).css('display','block');
+	$("#user" + userNum + "_choice" + 6).css('display','block');
+	$("#user" + userNum + "_choice" + 7).css('display','none');
+	$("#user" + userNum + "_choice" + 8).css('display','none');
+}
+
 </script>
 
-<% var menuMain = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuMain" CLASS="menuSide">
-
-<DIV CLASS="menu left">
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoFood" onClick="user[<%= userNum %>].loadMenu('menuMain', 'menuFood');">1</A>]</SPAN> Order Food/Drinks<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoGames" onClick="user[<%= userNum %>].loadMenu('menuMain', 'menuGames');">2</A>]</SPAN> Play Games<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoNews" onClick="user[<%= userNum %>].getNews(); user[<%= userNum %>].loadMenu('menuMain', 'menuNews');">3</A>]</SPAN> Get News Updates<BR />
-<SPAN CLASS="ext">[4]</SPAN> Social
-</DIV>
-
-</DIV> <!-- /menuMain -->
-
-<% }
-
-var menuFood = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuFood" CLASS="menuSide" STYLE="display: none;">
-
-<DIV CLASS="menu left">
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoBeer" onClick="user[<%= userNum %>].loadMenu('menuFood', 'menuBeer');">1</A>]</SPAN> Beer<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoWine" onClick="user[<%= userNum %>].loadMenu('menuFood', 'menuWine');">2</A>]</SPAN> Wine<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoLiquor" onClick="user[<%= userNum %>].loadMenu('menuFood', 'menuLiquor');">3</A>]</SPAN> Liquor<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoOtherDrinks" onClick="user[<%= userNum %>].loadMenu('menuFood', 'menuOther');">4</A>]</SPAN> Non-Alcoholic Drinks<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoWater" onClick="user[<%= userNum %>].loadMenu('menuFood', 'menuWater');">5</A>]</SPAN> Water<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoFood6" onClick="user[<%= userNum %>].loadMenu('menuFood', 'menuFood6');">6</A>]</SPAN> Burger<BR />
-<SPAN CLASS="ext">[7]</SPAN> Fajita Burrito<BR />
-<SPAN CLASS="ext">[8]</SPAN> Chips and Salsa<BR />
-</DIV>
-
-</DIV> <!-- /menuFood -->
-
-<% }
-
-var menuNews = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuNews" CLASS="menuSide" STYLE="display: none;">
-
-<DIV CLASS="menu left">
-<% for (var i=1; i<=8; i++) { %>
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoNews<%= i %>"><%= i %></A>]</SPAN> <SPAN ID="user<%= userNum %>_headline<%= i %>" CLASS="headline"></SPAN><BR />
-<% } %>
-</DIV>
-
-</DIV> <!-- /menuNews -->
-
-<% }
-
-var menuBeer = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuBeer" CLASS="menuSide" STYLE="display: none;">
-
-<DIV CLASS="menu left">
-<% var counter = 1; for (var i=0; i<menu.length; i++) {
-if (menu[i].menuType == "Beer") { %><SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoBeer<%= counter %>" TITLE="<%= menu[i]._id %>" onClick="user[<%= userNum %>].viewItem('<%= menu[i].menuType %>', '<%= menu[i].menuName %>', '<%= menu[i]._id %>');"><%= counter %></A>]</SPAN> <SPAN ID="user<%= userNum %>_nameBeer<%= counter %>"><%= menu[i].menuName %></SPAN><BR />
-<% counter++; if (counter == 6) { %></DIV>
-
-<DIV CLASS="menu right">
-<% } } } if (counter > 5) { %></DIV> <% } %>
-
-</DIV> <!-- /menuBeer -->
-
-<% }
-
-var menuWine = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuWine" CLASS="menuSide" STYLE="display: none;">
-
-<DIV CLASS="menu left">
-<% var counter = 1; for (var i=0; i<menu.length; i++) {
-if (menu[i].menuType == "Wine") { %><SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoWine<%= counter %>" onClick="user[<%= userNum %>].viewItem('<%= menu[i].menuType %>', '<%= menu[i].menuName %>', '<%= menu[i]._id %>');"><%= counter %></A>]</SPAN> <%= menu[i].menuName %><BR />
-<% counter++; if (counter == 6) { %></DIV>
-
-<DIV CLASS="menu right">
-<% } } } if (counter > 5) { %></DIV> <% } %>
-
-</DIV> <!-- /menuWine -->
-
-<% }
-
-var menuLiquor = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuLiquor" CLASS="menuSide" STYLE="display: none;">
-
-<DIV CLASS="menu left">
-<% var counter = 1; for (var i=0; i<menu.length; i++) {
-if (menu[i].menuType == "Liquor") { %><SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoLiquor<%= counter %>" onClick="user[<%= userNum %>].viewItem('<%= menu[i].menuType %>', '<%= menu[i].menuName %>', '<%= menu[i]._id %>');"><%= counter %></A>]</SPAN> <%= menu[i].menuName %><BR />
-<% counter++; if (counter == 6) { %></DIV>
-
-<DIV CLASS="menu right">
-<% } } } if (counter > 5) { %></DIV> <% } %>
-
-</DIV> <!-- /menuLiquor -->
-
-<% }
+<% 
 
 var menuFood6 = function(userNum) { %>
 
@@ -293,62 +580,6 @@ var menuFood6 = function(userNum) { %>
 </DIV>
 
 </DIV> <!-- /menuFood6 -->
-
-<% }
-
-var menuPurchase = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuPurchase" CLASS="menuSide" STYLE="display: none;">
-<SPAN ID="user<%= userNum %>_menuPurchaseName" STYLE="font-size: 30pt;"></SPAN><BR />
-<SPAN ID="user<%= userNum %>_menuPurchaseID" STYLE="display: none;"></SPAN>
-<DIV CLASS='menu left'>
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_buy">1</A>]</SPAN> Purchase<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_remove">2</A>]</SPAN> Remove<BR />
-<DIV ID="user<%= userNum %>_confirm" CLASS="infoMsg" STYLE="display: none;">Added to order!</DIV>
-</DIV>
-</DIV>
-
-<% } 
-
-var checkOpenOrder = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_openOrder" CLASS="menuSide" STYLE="display: none;">
-<DIV CLASS='menu left'>
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_sendOrder">1</A>]</SPAN> Finalize Order<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_cancelOrder">2</A>]</SPAN> Cancel Order<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_closeTab">3</A>]</SPAN> Close Your Tab<BR />
-<DIV ID="user<%= userNum %>_confirmOrder" CLASS="infoMsg" STYLE="display: none;">Order sent!</DIV>
-</DIV>
-</DIV>
-
-<% } 
-
-var menuGames = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuGames" CLASS="menuSide" STYLE="display: none;">
-<DIV CLASS='menu left'>
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoGames1">1</A>]</SPAN> Trivia<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoGames2">2</A>]</SPAN> Tetris
-<DIV ID="user<%= userNum %>_confirmOrder" CLASS="infoMsg" STYLE="display: none;">Order sent!</DIV>
-</DIV>
-</DIV>
-
-<% }
-
-var menuTrivia = function(userNum) { %>
-
-<DIV ID="user<%= userNum %>_menuTrivia" CLASS="menuSide" STYLE="display: none;">
-<DIV CLASS="menu left">
-<SPAN STYLE="font-size: 25pt;" ID="user<%= userNum %>_triviaQ" TITLE=""></SPAN><BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoTrivia1" onClick="$.checkAnswer(<%= userNum %>, 1);">1</A>]</SPAN> <SPAN ID="user<%= userNum %>_triviaA1"></SPAN><BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoTrivia2" onClick="$.checkAnswer(<%= userNum %>, 2);">2</A>]</SPAN> <SPAN ID="user<%= userNum %>_triviaA2"></SPAN><BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoTrivia3" onClick="$.checkAnswer(<%= userNum %>, 3);">3</A>]</SPAN> <SPAN ID="user<%= userNum %>_triviaA3"></SPAN><BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoTrivia4" onClick="$.checkAnswer(<%= userNum %>, 4);">4</A>]</SPAN> <SPAN ID="user<%= userNum %>_triviaA4"></SPAN><BR /><BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoTrivia5">5</A>]</SPAN> New Question<BR />
-<SPAN CLASS="ext">[<A HREF="#" ID="user<%= userNum %>_gotoTrivia6">6</A>]</SPAN> Quit<BR />
-<DIV ID="user<%= userNum %>_confirmAnswer" CLASS="infoMsg" STYLE="display: none;">Checking answer...</DIV>
-</DIV>
-</DIV> <!-- /menuBeer -->
 
 <% } %>
 
@@ -367,21 +598,18 @@ var menuTrivia = function(userNum) { %>
 <span id="connected">x7983 :: disconnected</span><BR />
 <span id="call_list"></span>
 
-<%
-menuMain(i);
-menuGames(i);
-menuTrivia(i);
-menuNews(i);
-menuBeer(i);
-menuPurchase(i);
-menuWine(i);
-menuLiquor(i);
-menuFood(i);
-menuFood6(i);
-checkOpenOrder(i);
-%>
+<DIV ID="user<%= i %>_menuPrototype" CLASS="menuSide">
+<DIV CLASS="menu left">
+<SPAN STYLE="font-size: 25pt;" ID="user<%= i %>_pName" TITLE=""></SPAN><BR />
+<% for (var j=1; j<= 8; j++) { %>
+<SPAN ID="user<%= i %>_choice<%= j %>"><SPAN CLASS="ext">[<A HREF="#" ID="user<%= i %>_goto<%= j %>" onClick="" TITLE=""><%= j %></A>]</SPAN> <SPAN ID="user<%= i %>_<%= j %>"></SPAN><BR /></SPAN>
+<% } %>
+<DIV ID="user<%= i %>_pMsg" CLASS="infoMsg" STYLE="display: none;"></DIV>
+</DIV>
+</DIV> <!-- /menuPrototype -->
 
 <BR /><BR /><DIV ID="user<%= i %>_currentOrder" CLASS="currentOrder" STYLE="display: none;">Nothing ordered yet!</DIV>
+<DIV ID="user<%= i %>_diagram" STYLE="display: none;"><IMG SRC='/img/diagram.jpg' WIDTH=200 HEIGHT=217 ALT='layout of tables in venue' BORDER=0></DIV>
 
 </DIV> <!-- /user<%= i %> -->
 
@@ -392,7 +620,7 @@ checkOpenOrder(i);
 </TD></TR>
 <TR><TD STYLE="height: 1em;" WIDTH="100%" ID="footer">
 <TABLE WIDTH="100%"><TR>
-<TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="user1_gotoOrder">*</A>]</SPAN> Your Tab/Orders</TD>
+<TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="user1_gotoOrder" onClick="user[1].loadMenu('CheckOrder');">*</A>]</SPAN> Your Tab/Orders</TD>
 <TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="user1_gotoBack">0</A>]</SPAN> Go Back</TD>
 <TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[#]</SPAN> Next Page (if available)</TD>
 </TR></TABLE><BR />
@@ -405,6 +633,11 @@ checkOpenOrder(i);
 $(function() {
 
 	var numCallers = 2;
+
+	//$("#user1_pName").html(menuMainObj.name);
+	for (var i=0; i<4; i++) {
+		fillMenu(i, menuMainObj);
+	}
 
 	for (var i=1;i<=numCallers;i++) {
 		$("#user" + i).css('display','block');
@@ -446,108 +679,23 @@ $(function() {
 		$(".ext").css('font-size','25pt');
 	}
 
-<% var jQueryLogic = function(userNum) { %>
-
-	$("#user<%= userNum %>_buy").click(function() {
-		user[<%= userNum %>].buy($('#user' + <%= userNum %> + '_menuPurchaseID').html());
-		$("#user<%= userNum %>_confirm").fadeToggle(300).delay(2000).fadeToggle(300);
+	$("#user1_gotoBack").click(function() {
+		user[1].loadMenu(user[1].upMenu);
 	});
-	$("#user<%= userNum %>_remove").click(function() {
-		user[<%= userNum %>].remove($('#user' + <%= userNum %> + '_menuPurchaseID').html());
-		$("#user<%= userNum %>_confirm").fadeToggle(300).delay(2000).fadeToggle(300);
-	});
-
-	$("#user<%= userNum %>_gotoOrder").click(function() {
-		user[<%= userNum %>].upMenu = "#user<%= userNum %>_menuMain";
-		user[<%= userNum %>].currentMenu = "#user<%= userNum %>_currentOrder";
-		user[<%= userNum %>].clearMenus(<%= userNum %>);
-		$("#user<%= userNum %>_currentOrder").css("display","block");
-	});
-
-	$("#user<%= userNum %>_gotoTrivia5").click(function() {
-		$.genQuestion(<%= userNum %>, $.newQuestionNum());
-		$("#user<%= userNum %>_confirmAnswer").css('display','none');
-		$("#user<%= userNum %>_menuTrivia").css('display','block');
-	});
-	$("#user<%= userNum %>_gotoGames1").click(function() {
-		user[<%= userNum %>].upMenu = "#user<%= userNum %>_menuGames";
-		user[<%= userNum %>].currentMenu = "#user<%= userNum %>_menuTrivia";
-		user[<%= userNum %>].clearMenus(<%= userNum %>);
-		$.genQuestion(<%= userNum %>, $.newQuestionNum());
-		$("#user<%= userNum %>_menuTrivia").css('display','block');
-	});
-	// TODO: fix this. does it go up a nav level or what?
-	// TODO: checks client ID
-	$("#user<%= userNum %>_gotoBack").click(function() {
-		user[<%= userNum %>].clearMenus(<%= userNum %>);
-		$(user[<%= userNum %>].upMenu).css("display","block");
-		// TODO: doesn't go exactly where it should
-		switch (user[<%= userNum %>].upMenu) {
-			case "#user<%= userNum %>_menuFood" :
-				user[<%= userNum %>].upMenu = "#user<%= userNum %>_menuMain";
-				user[<%= userNum %>].currentMenu = "#user<%= userNum %>_menuFood";
-				break;
-			default :
-				console.log("fired default");
-				user[<%= userNum %>].upMenu = "#user<%= userNum %>_menuMain";
-				user[<%= userNum %>].currentMenu = "#user<%= userNum %>_menuMain";
-		}
-	});
-
-<% } %>
-
-	<%
-	jQueryLogic(1);
-	jQueryLogic(2);
-	jQueryLogic(3);
-	jQueryLogic(4);
-	%>
-
-	var trivia = [
-		{
-			id : 0,
-			q : "What is the capital of Mongolia?",
-			a : "Ulan Bator",
-			a1 : "Tashkent",
-			a2 : "Kathmandu",
-			a3 : "Nangahar",
-			a4 : "Ulan Bator"
-		},
-		{
-			id : 1,
-			q : "Who was the first 'Accidental President'?",
-			a : "John Q. Adams",
-			a1 : "John Tyler",
-			a2 : "Gerald Ford",
-			a3 : "John Q. Adams",
-			a4 : "James Garfield",
-		}
-	];
 
 	$.newQuestionNum = function () {
 		var randomQNum = Math.floor(Math.random() * trivia.length);
 		return randomQNum;
 	};
 
-	$.genQuestion = function(userNum, randomQNum) {
-		console.log(randomQNum);
-		console.log(trivia.length);
-		$("#user" + userNum + "_triviaQ").html(trivia[randomQNum].q);
-		$("#user" + userNum + "_triviaQ").attr("title", trivia[randomQNum].a);
-		$("#user" + userNum + "_triviaA1").html(trivia[randomQNum].a1);
-		$("#user" + userNum + "_triviaA2").html(trivia[randomQNum].a2);
-		$("#user" + userNum + "_triviaA3").html(trivia[randomQNum].a3);
-		$("#user" + userNum + "_triviaA4").html(trivia[randomQNum].a4);
-	};
-
 	$.checkAnswer = function(userNum, guess) {
-		if ($("#user" + userNum + "_triviaQ").attr("title") == $("#user" + userNum + "_triviaA" + guess).html()) {
-			$("#user" + userNum + "_confirmAnswer").html('You got it right!');
+		if ($("#user" + userNum + "_pName").attr("title") == $("#user" + userNum + "_" + guess).html()) {
+			$("#user" + userNum + "_pMsg").html('You got it right!');
 		}
 		else {
-			$("#user" + userNum + "_confirmAnswer").html('You got it wrong. :(');
+			$("#user" + userNum + "_pMsg").html('You got it wrong. :(');
 		}
-		$("#user" + userNum + "_confirmAnswer").css('display','block');
+		$("#user" + userNum + "_pMsg").css('display','block');
 	};
 
 });
