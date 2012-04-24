@@ -12,7 +12,7 @@ var requestURL = require('request');
 
 var DB = require('./accessDB');
 var db = new DB.startup(process.env.MONGOLAB_URI);
-var secret = 'rubadubdub';
+var secret = process.env.SALT;
 
 /*********** SERVER CONFIGURATION *****************/
 app.configure(function() {
