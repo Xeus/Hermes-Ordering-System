@@ -1,36 +1,131 @@
 <script type="text/javascript" src="/js/tinyphone_client.js"></script>
 <script>
-var phoneNumber = "1.936.755.1046";
-tinyphone.init("108.166.73.53",12003,phoneNumber);
+var numCallers = 0;
+var phoneNumber = "19367551046";
+var displayedPhoneNumber = "1.936.755.1046";
+
+var getPhoneNum = function(uneditedNumber) {
+	var editedNumber = uneditedNumber.replace(/[a-z,<,>,", ,+]/gi, "")
+	return editedNumber;
+};
+
+tinyphone.init("108.166.73.53", 12003, phoneNumber);
 tinyphone.on('connect', function(){
-	var d = document.getElementById("connected");
-	d.innerHTML="connected to server";
+	//var d = document.getElementById("connected");
+	//d.innerHTML="connected to server";
 });
+// TODO: not sure how to get behavior for this considering no result sent back
 tinyphone.on('disconnect', function(){
-	var d = document.getElementById("connected");
-	d.innerHTML="disconnected";
+	numCallers--;
+	console.log('disco: ' + numCallers);
+	changeDisplay(numCallers);
 });
 tinyphone.on('new_call', function(caller){
-	var parent = document.getElementById("call_list");
-	var newdiv = document.createElement('div');
-  	var divIdName = caller.id;
-  	newdiv.setAttribute('id',divIdName);
-  	newdiv.innerHTML = 'Caller '+caller.callerNumber;
-  	parent.appendChild(newdiv);
+	numCallers++;
+	console.log('newcall: ' + numCallers);
+	var tempNumber = getPhoneNum(caller.callerNumber);
+	var foundNum = false;
+	for (var i=1; i<=4; i++) {
+		if (user[i].phoneNumber == tempNumber) {
+			foundNum = true;
+			var callerStatusDiv = document.getElementById("user" + i + "connected");
+			$("#user" + i).css('display','block');
+		}
+	}
+	dance:
+	if (foundNum == false) {
+		for (var i=1; i<=4; i++) {
+			if (user[i].connected != true) {
+				user[i].connected = true;
+				var haystack = i;
+				user[i].phoneNumber = tempNumber;
+				var callerStatusDiv = document.getElementById("user" + i + "connected");
+				$("#user" + i).css('display','block');
+				console.log("New caller num = " + i);
+				break dance;
+			}
+			else {
+				// TODO: deny call?
+				console.log("Too many callers!");
+			}
+		}
+	}
+	changeDisplay(numCallers);
+  var endPhoneNumber = tempNumber.substr(tempNumber.length-4);
+  callerStatusDiv.innerHTML = "x" + endPhoneNumber + " :: connected";
 });
 tinyphone.on('keypress', function(caller){
+	console.log("Triggered");
 	var keypress = caller.keypress;
-	var userNum = 1; // TODO: genericize this
-	//if (keypress == '*'|| keypress == '#'){keypress='0'};
-	//var keynum = parseInt(keypress);
-	user[userNum].keyProc(keypress);
+	for (var i=1; i<=4; i++) {
+		if (user[i].phoneNumber == getPhoneNum(caller.callerNumber)) {
+			var clientUserNum = i;
+		}
+	}
+	user[clientUserNum].keyProc(keypress);
 });
-tinyphone.on('hangup', function(caller){
-	var d = document.getElementById("call_list");
-  	var olddiv = document.getElementById(caller.id);
-	d.removeChild(olddiv);
+// TODO: count is off
+tinyphone.on('hangup', function(caller) {
+	numCallers--;
+	for (var i=1; i<=4; i++) {
+		if (user[i].phoneNumber == getPhoneNum(caller.callerNumber)) {
+			var callerStatusDiv = document.getElementById("user" + i + "connected");
+			callerStatusDiv.innerHTML="open line";
+			user[i].loadMenu("Main");
+			user[i].phoneNumber = 0;
+			user[i].connected = false;
+			$("#user" + i).css('display','none');
+			console.log('hangup: ' + numCallers);
+			changeDisplay(numCallers);
+		}
+	}
 });
 
+// properly divides up screen depending on number of users
+var changeDisplay = function(numCallers) {
+	if (numCallers == 1) {
+		$("#user1").css('width','90%');
+		$("#user2").css('display','none');
+		$("#user1").css('float','left');
+		$(".menu").css('font-size','30pt');
+		$(".ext").css('font-size','25pt');
+	}
+	else if (numCallers == 2) {
+		$("#user1").css('width','45%');
+		$("#user2").css('width','45%');
+		$("#user1").css('float','left');
+		$("#user2").css('float','right');
+		$(".menu").css('font-size','30pt');
+		$(".ext").css('font-size','25pt');
+	}
+	else if (numCallers == 3) {
+		$("#user1").css('width','30%');
+		$("#user2").css('width','30%');
+		$("#user3").css('width','30%');
+		$("#user1").css('float','left');
+		$("#user2").css('float','middle');
+		$("#user3").css('float','right');
+		$(".menu").css('font-size','30pt');
+		$(".ext").css('font-size','25pt');
+	}
+	else if (numCallers == 4) {
+		$("#user1").css('width','20%');
+		$("#user2").css('width','20%');
+		$("#user3").css('width','20%');
+		$("#user4").css('width','20%');
+		$("#user1").css('float','left');
+		$("#user2").css('float','middle');
+		$("#user2").css('float','middle');
+		$("#user2").css('float','right');
+		$(".menu").css('font-size','30pt');
+		$(".ext").css('font-size','25pt');
+	}
+	
+	$("#user1").css('display','block');
+};
+
+// p describes the menu text labels for people to read
+// pClick tells the click event which menu to load when it's selected
 var menuMainObj = {
 	name : "Main Menu",
 	upMenu : "Main",
@@ -40,6 +135,7 @@ var menuMainObj = {
 	pClick : ["", "Food", "Games", "News", "Social"]
 }
 
+// TODO: fix burgers
 var menuFoodObj = {
 	name : "Food/Drinks Menu",
 	upMenu : "Main",
@@ -157,7 +253,7 @@ var menuCheckOrderObj = {
 	upMenu : "Main",
 	currentMenu : "CheckOrder",
 	id : "",
-	p : ["", "Place Order", "Cancel Order", "Close Your Tab", ""],
+	p : ["", "Place Order", "Cancel Order", "Close Your Tab"],
 	pClick : ["", "user[userNum].placeOrder();", "user[userNum].cancelOrder();", "user[userNum].closeTab();"],
 	statusMsg : "Order sent!"
 }
@@ -207,11 +303,13 @@ var getNews = function(userNum) {
 	});
 };
 
+// four users are created with their own methods and vars
 function User(userNum) {
 	var self = this;
-
+	this.phoneNumber = "";
 	this.upMenu = "Main";
 	this.currentMenu = "Main";
+	this.connected = false;
 
 <%
 for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
@@ -220,12 +318,14 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 <% } %>
 
 	this.order = {
+		phoneNumber : 0,
 		toBuy : [],
 		toTable : 0
 		// TODO: reset after order is sent, because if you send
 		// drinks to other people, variable changes
 	};
 	this.tab = {
+		phoneNumber : 0,
 		toBuy : []
 	};
 	this.flirt = {
@@ -235,46 +335,64 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 
 	this.buy = function(itemID) {
 		this.order.toBuy.push(itemID);
-		this.getMenu(this.order.toBuy);
+		this.order.phoneNumber = this.phoneNumber;
+		this.getMenu(this.order.toBuy, this.tab.toBuy);
 		$("#user" + userNum + "_pMsg").html('Added to order!');
 		$("#user" + userNum + "_pMsg").css('display','block');
 	};
 	// TODO: seems to be removing wrong items if right items all gone
 	this.remove = function(itemID) {
 		this.order.toBuy.pop(itemID);
-		this.getMenu(this.order.toBuy);
+		this.getMenu(this.order.toBuy, this.tab.toBuy);
 		$("#user" + userNum + "_pMsg").html('Removed from order!');
 		$("#user" + userNum + "_pMsg").css('display','block');
 	};
 	// not very secure, move to db
-	this.printOrder = function(menu, toBuy) {
+	this.printOrder = function(menu, order, tab) {
+
+		// tells customer if it will be sent to a specific table or not
 		var newHTML = "<B>Your Current Open Order:</B><BR />";
 		if (user[userNum].order.toBuy.toTable != 0 && user[userNum].order.toBuy.toTable != undefined) {
 			newHTML += "(will be sent to Table #" + user[userNum].order.toBuy.toTable + ")<BR />";
 		}
+
+		var totalOrderCost = 0;
+		var totalTabCost = 0;
 		var totalCost = 0;
 		var found = false;
 		for (var i=0; i<menu.length; i++) {
-			for (var j=0; j<toBuy.length; j++) {
-				if (menu[i]._id == toBuy[j]) {
+			for (var j=0; j<order.length; j++) {
+				if (menu[i]._id == order[j]) {
 					var tempHTML = menu[i].menuName + " :: $" + menu[i].menuCost.toFixed(2) + "<BR />";
 					newHTML += tempHTML;
-					totalCost += menu[i].menuCost;
+					totalOrderCost += menu[i].menuCost;
 					found = true;
 				}
 			}
 		}
-		newHTML += "<B>Total: $" + totalCost.toFixed(2);
+		newHTML += "<B>Total for Order: $" + totalOrderCost.toFixed(2);
 		newHTML += "<BR /><BR />";
-		newHTML += "<B>Your Current Check/Tab Total:</B><BR />";
-		newHTML += "<B>Total: $" + totalCost.toFixed(2);
+		newHTML += "<B>Your Current Tab (Excludes Open Orders):</B><BR />";
+		for (var i=0; i<menu.length; i++) {
+			for (var j=0; j<tab.length; j++) {
+				if (menu[i]._id == tab[j]) {
+					var tempHTML = menu[i].menuName + " :: $" + menu[i].menuCost.toFixed(2) + "<BR />";
+					newHTML += tempHTML;
+					totalTabCost += menu[i].menuCost;
+					found = true;
+				}
+			}
+		}
+		newHTML += "<B>Total: $" + totalTabCost.toFixed(2);
 		$("#user" + userNum + "_currentOrder").html(newHTML);
 		$("#user" + userNum + "_currentOrder").css('display','block');
 	};
 	// TODO: should just generate order and pass to tab
 	this.placeOrder = function() {
+		this.order.phoneNumber = this.phoneNumber;
+		this.tab.phoneNumber = this.phoneNumber;
 		$.ajax({
-            url : '/emailConfirm',
+            url : '/order',
             type : 'POST',
             data : this.order, 
             dataType : 'json',
@@ -283,11 +401,13 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
                 if (response.status == "OK") {
                     console.log("order sent");
                     $("#user" + userNum + "_pMsg").html("Your order has been placed!");
-					$("#user" + userNum + "_pMsg").css('display','block');
-					$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
-					$("#user" + userNum + "_currentOrder").css('display','block');
-					user[userNum].order = { toBuy : [], toTable : 0 };
-					user[userNum].tab = { toBuy : [] };
+										$("#user" + userNum + "_pMsg").css('display','block');
+										$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
+										$("#user" + userNum + "_currentOrder").css('display','block');
+										user[userNum].tab.toBuy = user[userNum].tab.toBuy.concat(user[userNum].order.toBuy);
+										console.log(user[userNum].tab.toBuy);
+										console.log(user[userNum].order.toBuy);
+										user[userNum].order = { toBuy : [], toTable : 0 };
                 }
             }, 
             error : function(error) {
@@ -306,52 +426,55 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 	}
 	// TODO: fix this for tab and not just for order
 	this.closeTab = function() {
+		this.tab.phoneNumber = this.phoneNumber;
 		$.ajax({
-            url : '/emailConfirm',
+            url : '/pay',
             type : 'POST',
-            data : this.order, 
+            data : this.tab, 
             dataType : 'json',
             
             success : function(response) {
                 if (response.status == "OK") {
                     console.log("order sent");
                     $("#user" + userNum + "_pMsg").html("Your tab has been closed! Please go pay. :)");
-					$("#user" + userNum + "_pMsg").css('display','block');
-					$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
-					$("#user" + userNum + "_currentOrder").css('display','block');
-					user[userNum].order = { toBuy : [], toTable : 0 };
-					user[userNum].tab = { toBuy : [] };
+										$("#user" + userNum + "_pMsg").css('display','block');
+										$("#user" + userNum + "_currentOrder").html("Nothing ordered yet!");
+										$("#user" + userNum + "_currentOrder").css('display','block');
+										user[userNum].order = { toBuy : [], toTable : 0 };
+										user[userNum].tab = { toBuy : [] };
                 }
             }, 
             error : function(error) {
-                console.log("There was an error");
+                console.log("There was an error.");
                 console.log(error);
             }
             
         });
 	}
-	this.getMenu = function(toBuy) {
+	this.getMenu = function(order, tab) {
 		$.ajax({
 			url: "/menu/json",
 			type: "GET",
 			dataType: "json",
 			success: function(response) {
 				if (response.status == "OK") {
-	                console.log("JSON retrieved");
-	                menu = response.menu;
-	                self.printOrder(menu, toBuy);
-	            }
-	        }, 
-	        error : function(error) {
-	            console.log("There was an error fetching the JSON.");
-	            console.log(error);
-	        }
+	        console.log("JSON retrieved");
+	        menu = response.menu;
+	        self.printOrder(menu, order, tab);
+	      }
+	    }, 
+	    error : function(error) {
+	      console.log("There was an error fetching the JSON.");
+	      console.log(error);
+	    }
 		});
 	};
+	// makes sure that navigation menus are updated when you change menus
 	this.updateNav = function(menuCurrent) {
 		eval("user[userNum].upMenu = menu" + menuCurrent + "Obj.upMenu");
 		eval("user[userNum].currentMenu = menu" + menuCurrent + "Obj.currentMenu");
 	}
+	// is called by click event, creates new object with menu to pass to fillMenu()
 	this.loadMenu = function(menuCurrent) {
 		this.updateNav(menuCurrent);
 		eval("var newMenuObj = menu" + menuCurrent + "Obj");
@@ -375,6 +498,7 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 			$("#user" + userNum + "_currentOrder").css('display','none');
 		}
 	};
+	// loaded when individual item is about to be ordered
 	this.viewItem = function(currentMenu, menuName, menuID) {
 		$("#user" + userNum + "_pName").html(menuName);
 		$("#user" + userNum + "_pName").attr("title", menuID);
@@ -387,30 +511,25 @@ for (var i=0; i<menuFood6Obj.menuOptions.length; i++) {
 		for (var j=0; j<viewTree.length; j++) {
 			var k = j+1;
 			$("#user" + userNum + "_" + k).html(viewTree[j]);
-			$("#user" + userNum + "_goto" + 1).attr("onclick", "user[" + userNum + "].buy('" + menuID + "');");
-			$("#user" + userNum + "_goto" + 2).attr("onclick", "user[" + userNum + "].remove('" + menuID + "');");
+			$("#user" + userNum + "_goto" + 1).attr("onclick", "user[" + userNum + "].buy('" + menuID + "'); event.preventDefault(); return false;");
+			$("#user" + userNum + "_goto" + 2).attr("onclick", "user[" + userNum + "].remove('" + menuID + "'); event.preventDefault(); return false;");
 			$("#user" + userNum + "_choice" + k).css('display','block');
 		}
 	};
+	// converts phone dialpad keypress to something frontend recognizes
 	this.keyProc = function(keypress) {
-		if (self.currentMenu == "#user" + userNum + "_menuMain") {
-			switch(keypress) {
-				case "1" : loadMenu('Food'); break;
-				case "2" : loadMenu('Games'); break;
-				case "3" : loadMenu('News'); break;
-				case "4" : loadMenu('Social'); break;
-				default : console.log("No command found!"); // TODO: error voice msg
-			}
+		console.log(keypress);
+		if (keypress == "#") {
+			// TODO: fill this in for "go to next page"
 		}
-		else if (self.currentMenu == "#user" + userNum + "_menuFood") {
-			switch(keypress) {
-				case "1" : loadMenu('Beer'); break;
-				case "2" : loadMenu('Wine'); break;
-				case "3" : loadMenu('Liquor'); break;
-				case "4" : loadMenu('Other'); break;
-				case "5" : loadMenu('Water'); break;
-				default : console.log("No command found!");
-			}
+		else if (keypress == "0") {
+			user[userNum].loadMenu(user[userNum].upMenu);
+		}
+		else if (keypress == "*") {
+			user[userNum].loadMenu('CheckOrder');
+		}
+		else {
+			$("A#user" + userNum + "_goto" + keypress).triggerHandler('click');
 		}
 	};
 }
@@ -421,6 +540,7 @@ for (var i=1; i<=4; i++) {
 	user[i] = new User(i);
 }
 
+// allows you to pick a table and saves it to a var for later
 var checkTable = function(userNum, tableNum) {
 	var baseMsg = "Table #" + tableNum;
 	if (user[userNum].order.toBuy.toTable != tableNum) {
@@ -453,6 +573,7 @@ var flirtMsg = function(userNum, msgNum) {
 	}
 }
 
+// populates menus based on object, may have if cases based on which nav menu & its unique specs
 var fillMenu = function(userNum, newObj) {
 	$("#user" + userNum + "_pName").html(newObj.name);
 	$("#user" + userNum + "_pName").attr("title", newObj.id);
@@ -460,28 +581,28 @@ var fillMenu = function(userNum, newObj) {
 	for (var i=1; i<=8; i++) {
 		if (newObj.p[i]) {
 			if (newObj.type == "product") {
-				var clickFunc = "user[" + userNum + "].viewItem('" + newObj.currentMenu + "', '" + newObj.p[i] + "', '" + newObj.id[i] + "');";
+				var clickFunc = "user[" + userNum + "].viewItem('" + newObj.currentMenu + "', '" + newObj.p[i] + "', '" + newObj.id[i] + "'); return false;";
 				$("#user" + userNum + "_" + i).html(newObj.p[i]);
 			}
 			else if (newObj.type == "orderTab") {
 				switch (i) {
 					case 1 :
-						var clickFunc = "user[" + userNum + "].placeOrder();";
+						var clickFunc = "user[" + userNum + "].placeOrder(); return false;";
 						$("#user" + userNum + "_" + i).html(newObj.p[i]);
 						break;
 					case 2 :
-						var clickFunc = "user[" + userNum + "].cancelOrder();";
+						var clickFunc = "user[" + userNum + "].cancelOrder(); return false;";
 						$("#user" + userNum + "_" + i).html(newObj.p[i]);
 						break;
-					case 2 :
-						var clickFunc = "user[" + userNum + "].closeTab();";
+					case 3 :
+						var clickFunc = "user[" + userNum + "].closeTab(); return false;";
 						$("#user" + userNum + "_" + i).html(newObj.p[i]);
 						break;
 				}
 			}
 			else if (newObj.type == "checkTable") {
 				$("#user" + userNum + "_diagram").css('display','block');
-				var clickFunc = "checkTable(" + userNum + ", " + newObj.pClick[i] + ");";
+				var clickFunc = "checkTable(" + userNum + ", " + newObj.pClick[i] + "); return false;";
 				if (user[userNum].order.toBuy.toTable == newObj.pClick[i]) {
 					$("#user" + userNum + "_" + i).html(newObj.p[i] + " <SPAN STYLE='color: yellow;'>(Selected)</SPAN>");
 				}
@@ -490,7 +611,7 @@ var fillMenu = function(userNum, newObj) {
 				}
 			}
 			else if (newObj.type == "flirtMsg") {
-				var clickFunc = "flirtMsg(" + userNum + ", " + newObj.pClick[i] + ");";
+				var clickFunc = "flirtMsg(" + userNum + ", " + newObj.pClick[i] + "); return false;";
 				if (user[userNum].flirt.msg == newObj.pClick[i]) {
 					$("#user" + userNum + "_" + i).html(newObj.p[i] + " <SPAN STYLE='color: yellow;'>(Selected)</SPAN>");
 				}
@@ -499,11 +620,11 @@ var fillMenu = function(userNum, newObj) {
 				}
 			}
 			else if ("pClick" in newObj) {
-				var clickFunc = "user[" + userNum + "].loadMenu('" + newObj.pClick[i] + "');";
+				var clickFunc = "user[" + userNum + "].loadMenu('" + newObj.pClick[i] + "'); return false;";
 				$("#user" + userNum + "_" + i).html(newObj.p[i]);
 			}
 			else {
-				var clickFunc = "user[" + userNum + "].loadMenu('" + newObj.currentMenu + "');";
+				var clickFunc = "user[" + userNum + "].loadMenu('" + newObj.currentMenu + "'); return false;";
 				$("#user" + userNum + "_" + i).html(newObj.p[i]);
 			}
 			if ("id" in newObj) {
@@ -522,6 +643,7 @@ var fillMenu = function(userNum, newObj) {
 	}
 }
 
+// TODO: need more trivia questions
 var trivia = [
 	{
 		id : 0,
@@ -548,7 +670,7 @@ var getTrivia = function(userNum) {
 	$("#user" + userNum + "_pName").html(trivia[randomQNum].q);
 	$("#user" + userNum + "_pName").attr("title", trivia[randomQNum].a);
 	for (var j=1; j<=4; j++) {
-		var clickFunc = "$.checkAnswer(" + userNum + ", " + j + ");";
+		var clickFunc = "$.checkAnswer(" + userNum + ", " + j + "); return false;";
 		$("#user" + userNum + "_goto" + j).attr("onClick", clickFunc);
 		$("#user" + userNum + "_choice" + j).css('display','block');
 	}
@@ -565,7 +687,7 @@ var getTrivia = function(userNum) {
 }
 
 </script>
-
+<!-- TODO: fix burger -->
 <% 
 
 var menuFood6 = function(userNum) { %>
@@ -585,7 +707,7 @@ var menuFood6 = function(userNum) { %>
 
 <TABLE BORDER=0 WIDTH="100%" HEIGHT="100%" ID="mainTable">
 <TR><TD VALIGN="top" STYLE="height: 1em;" ID="header">
-<div id="phone_number">Hermes @ call <script>document.write(phoneNumber);</script> to begin</div>
+<div id="phone_number">Hermes @ call <script>document.write(displayedPhoneNumber);</script> to begin</div>
 </TD></TR>
 <TR><TD WIDTH="100%" STYLE="padding: 0px;" VALIGN="top">
 
@@ -595,14 +717,14 @@ var menuFood6 = function(userNum) { %>
 
 <DIV ID="user<%= i %>" CLASS="user" STYLE="display: none;">
 
-<span id="connected">x7983 :: disconnected</span><BR />
-<span id="call_list"></span>
+<span id="user<%= i %>connected">open line</span><BR />
+<!-- <span id="call_list"></span> -->
 
 <DIV ID="user<%= i %>_menuPrototype" CLASS="menuSide">
 <DIV CLASS="menu left">
 <SPAN STYLE="font-size: 25pt;" ID="user<%= i %>_pName" TITLE=""></SPAN><BR />
 <% for (var j=1; j<= 8; j++) { %>
-<SPAN ID="user<%= i %>_choice<%= j %>"><SPAN CLASS="ext">[<A HREF="#" ID="user<%= i %>_goto<%= j %>" onClick="" TITLE=""><%= j %></A>]</SPAN> <SPAN ID="user<%= i %>_<%= j %>"></SPAN><BR /></SPAN>
+<SPAN ID="user<%= i %>_choice<%= j %>" CLASS="menu"><SPAN CLASS="ext">[<A HREF="#" ID="user<%= i %>_goto<%= j %>" onClick="" TITLE=""><%= j %></A>]</SPAN> <SPAN ID="user<%= i %>_<%= j %>"></SPAN><BR /></SPAN>
 <% } %>
 <DIV ID="user<%= i %>_pMsg" CLASS="infoMsg" STYLE="display: none;"></DIV>
 </DIV>
@@ -620,74 +742,48 @@ var menuFood6 = function(userNum) { %>
 </TD></TR>
 <TR><TD STYLE="height: 1em;" WIDTH="100%" ID="footer">
 <TABLE WIDTH="100%"><TR>
-<TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="user1_gotoOrder" onClick="user[1].loadMenu('CheckOrder');">*</A>]</SPAN> Your Tab/Orders</TD>
-<TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="user1_gotoBack">0</A>]</SPAN> Go Back</TD>
+<TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="gotoOrder" onClick="user[1].loadMenu('CheckOrder');">*</A>]</SPAN> Your Tab/Orders</TD>
+<TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[<A HREF="#" ID="gotoBack">0</A>]</SPAN> Go Back</TD>
 <TD WIDTH="33%" CLASS="menuBill"><SPAN CLASS="ext bill1">[#]</SPAN> Next Page (if available)</TD>
-</TR></TABLE><BR />
+</TR></TABLE>
 <CENTER>powered by Hermes</CENTER>
 </TD></TR>
 </TABLE>
 
+</BODY>
+
 <SCRIPT TYPE="text/javascript">
 
 $(function() {
-
-	var numCallers = 2;
 
 	//$("#user1_pName").html(menuMainObj.name);
 	for (var i=0; i<4; i++) {
 		fillMenu(i, menuMainObj);
 	}
 
-	for (var i=1;i<=numCallers;i++) {
-		$("#user" + i).css('display','block');
+	if (numCallers == 0) {
+		$("#user1").css('display','block');
+	}
+	else {
+		for (var i=1;i<=numCallers;i++) {
+			$("#user" + i).css('display','block');
+		}
 	}
 
-	if (numCallers == 1) {
-		$("#user1").css('width','90%');
-		$("#user2").css('display','none');
-		$("#user1").css('float','left');
-	}
-	else if (numCallers == 2) {
-		$("#user1").css('width','45%');
-		$("#user2").css('width','45%');
-		$("#user1").css('float','left');
-		$("#user2").css('float','right');
-		$(".menu").css('font-size','30pt');
-		$(".ext").css('font-size','25pt');
-	}
-	else if (numCallers == 3) {
-		$("#user1").css('width','30%');
-		$("#user2").css('width','30%');
-		$("#user3").css('width','30%');
-		$("#user1").css('float','left');
-		$("#user2").css('float','middle');
-		$("#user3").css('float','right');
-		$(".menu").css('font-size','30pt');
-		$(".ext").css('font-size','25pt');
-	}
-	else if (numCallers == 4) {
-		$("#user1").css('width','20%');
-		$("#user2").css('width','20%');
-		$("#user3").css('width','20%');
-		$("#user4").css('width','20%');
-		$("#user1").css('float','left');
-		$("#user2").css('float','middle');
-		$("#user2").css('float','middle');
-		$("#user2").css('float','right');
-		$(".menu").css('font-size','30pt');
-		$(".ext").css('font-size','25pt');
-	}
-
-	$("#user1_gotoBack").click(function() {
+	// important: handles back button functionality
+	$("#gotoBack").click(function(e) {
 		user[1].loadMenu(user[1].upMenu);
+		 return false;
+		 e.preventDefault();
 	});
 
+	// trivia
 	$.newQuestionNum = function () {
 		var randomQNum = Math.floor(Math.random() * trivia.length);
 		return randomQNum;
 	};
 
+	// trivia
 	$.checkAnswer = function(userNum, guess) {
 		if ($("#user" + userNum + "_pName").attr("title") == $("#user" + userNum + "_" + guess).html()) {
 			$("#user" + userNum + "_pMsg").html('You got it right!');

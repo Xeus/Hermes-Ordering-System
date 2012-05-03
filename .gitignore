@@ -2,6 +2,6 @@
 .env_heroku
 .env_local
 procfile.dev
-node_modules
-.DS_Store
+node_modules/
+*.DS_Store
 other/

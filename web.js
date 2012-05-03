@@ -47,6 +47,8 @@ app.listen(port, function() {
   console.log("Listening on " + port);
 });
 
+// tinyphone code w/ socket.io courtesy of Chris Kairalla & ITP Redial
+
 var REMOTE_PORT=12002;
 var SOCKETIO_PORT=12003;
 var AGI_HOST = '127.0.0.1';
@@ -122,9 +124,9 @@ remote_net.createServer(function(sock){
             if (attr[3] == "NULL"){
                 term_byte = '\0';
             }
-            var remoteClient = { id:uniqueid,
-                                 phoneNumber:phone_number, 
-                                 termByte:term_byte
+            var remoteClient = { id : uniqueid,
+                                 phoneNumber : phone_number, 
+                                 termByte : term_byte
                                 }
             remoteClient["socket"]=sock;
             var remoteKey = sock.remoteAddress+":"+sock.remotePort;
@@ -172,9 +174,9 @@ agi_net.createServer(function(sock) {
         
         function newCaller(message){
             var phoneNumbers=message.value.split("|");
-            var caller = {  id:message.id,
-                            callerNumber:phoneNumbers[0],
-                            numCalled:phoneNumbers[1] };
+            var caller = {  id : message.id,
+                            callerNumber : phoneNumbers[0],
+                            numCalled : phoneNumbers[1] };
             console.log("new caller! " + JSON.stringify(caller));
             caller["socket"] = sock;
             callers[caller.id]=caller;

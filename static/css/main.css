@@ -2,11 +2,12 @@ HTML, BODY, INPUT, BUTTON, SELECT, OPTION { font-family: 'Patua One', cursive; }
 HTML, BODY { background: #012340; color: white; padding: 0px; margin: 0px; }
 P { font-size: 20pt; text-align: justify;}
 #header, #footer { background: #026873; color: #F2F0CE; }
+#footer { font-size: 20pt;}
 .menuSide { margin: 0px auto; width: 100%; }
-.menu { margin: 0px auto; font-size: 50pt; }
-.menuBill { font-size: 30pt; height: 1em; text-align: center;}
-#phone_number { font-size: 70pt; margin: 0px auto; width: 100%; text-align: center; }
-.ext { font-family: Monaco; font-weight: bold; font-size: 45pt; }
+.menu { margin: 0px auto; font-size: 30pt; }
+.menuBill { font-size: 20pt; height: 1em; text-align: center;}
+#phone_number { font-size: 60pt; margin: 0px auto; width: 100%; text-align: center; }
+.ext { font-family: Monaco; font-weight: bold; font-size: 25pt; }
 A { color: white; text-decoration: none;}
 .login, .login TD { font-size: 30pt; }
 .header { color: #F2F0CE; font-weight: bold;}

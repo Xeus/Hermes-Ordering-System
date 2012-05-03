@@ -3,41 +3,17 @@
 /* Module dependencies. */
 var db = require('../accessDB');
 var _ = require('underscore');
+var rest = require('restler');
+var util = require('util');
 
 module.exports = {
 
     // app.get('/'...)
     // userRoute.index
-    index: function(request, response) {
-      
-        templateData = {}
-        response.render('index.html', templateData);
-    },
-
     intro: function(request, response) {
-        var flowNames = [];
-
-        db.Flow.find({ active : true }, ["name"], function(err, activeFlowNames) {
-            if (err) { console.log(err); }
-            console.log(activeFlowNames.length);
-
-            // autocomplete for finding active flows via input field
-            for (var i=0;i<activeFlowNames.length;i++) {
-                flowNames.push(activeFlowNames[i].name);
-            }
-
-            // will show admin nav edit links if logged in
-            if (request.user) { var loggedIn = true; } else { var loggedIn = false; }
-
-            var templateData = {
-                pageTitle : "Karaoke Flow",
-                activeFlowNames : flowNames,
-                admin : false, // shows admin nav if true
-                loggedIn : loggedIn
-            };
-    
-            response.render("index.html", templateData);
-        });
+      
+        templateData = {};
+        response.render('index.html', templateData);
     },
 
     menu: function(request, response) {
@@ -52,14 +28,15 @@ module.exports = {
         });
     },
 
-    emailConfirm: function(request, response) {
+    order: function(request, response) {
+        console.log(request);
         db.Menu.find({}, {}, { sort: { menuName : 'ascending' } }, function(err, menu) {
 
             // tabulates the bill and saves it to body of email
             var orderText = "";
             var orderCost = 0;
             var currentTime = new Date();
-            orderText += "ORDER SUMMARY\n";
+            orderText += "ORDER FULFILLMENT SUMMARY\n";
             orderText += currentTime + "\n\n";
             for (var i=0; i<menu.length; i++) {
                 for (var j=0; j<request.body.toBuy.length; j++) {
@@ -71,8 +48,8 @@ module.exports = {
             }
             orderText += "-----------------------------\n";
             orderText += "TOTAL COST: $" + orderCost.toFixed(2) + "\n\n";
-            orderText += "Thank you for your patronage!\n";
-            orderText += "Hermes Ordering Service\n";
+            orderText += "Order processed, added to tab for customer phone #: " + request.body.phoneNumber + "\n\n";
+            orderText += "Courtesy of Hermes Ordering Service\n";
 
             // configs the email login settings
             var email   = require("emailjs");
@@ -87,12 +64,101 @@ module.exports = {
             server.send({
                 text:    orderText, 
                 from:    "Hermes Ordering Front-End <" + process.env.MAIL_FROM + ">", 
-                to:      "Hermes Order Confirm <" + process.env.MAIL_TO + ">",
+                to:      "Hermes Processing <" + process.env.MAIL_TO + ">",
                 cc:      "Admin <" + process.env.MAIL_CC + ">",
-                subject: "Order Confirmation"
+                subject: "Order Confirmation for " + request.body.phoneNumber
             }, function(err, message) {
                 console.log(err || message);
             });
+
+            if (request.xhr) {
+                response.json({
+                    status : 'OK'
+                });
+            }
+        });
+    },
+
+    pay: function(request, response) {
+        console.log(request);
+        db.Menu.find({}, {}, { sort: { menuName : 'ascending' } }, function(err, menu) {
+
+            // tabulates the bill and saves it to body of email
+            var orderText = "";
+            var orderCost = 0;
+            var currentTime = new Date();
+            orderText += "SUMMARY OF CUSTOMER'S TAB\n";
+            orderText += currentTime + "\n\n";
+            for (var i=0; i<menu.length; i++) {
+                for (var j=0; j<request.body.toBuy.length; j++) {
+                    if (menu[i]._id == request.body.toBuy[j]) {
+                        orderText += menu[i].menuName + " :: $" + menu[i].menuCost.toFixed(2) + "\n";
+                        orderCost += menu[i].menuCost;
+                    }
+                }
+            }
+            orderText += "-----------------------------\n";
+            orderText += "TOTAL COST: $" + orderCost.toFixed(2) + "\n\n";
+            orderText += "Total tab processed for customer phone #: " + request.body.phoneNumber + "\n\n";
+            orderText += "Courtesy of Hermes Ordering Service\n";
+
+            // configs the email login settings
+            var email   = require("emailjs");
+            var server  = email.server.connect({
+                user:     process.env.GMAIL_USER, 
+                password: process.env.GMAIL_PASS, 
+                host:     "smtp.gmail.com", 
+                ssl:      true
+            });
+
+            // send the message and get a callback with an error or details of the message that was sent
+            server.send({
+                text:    orderText, 
+                from:    "Hermes Ordering Front-End <" + process.env.MAIL_FROM + ">", 
+                to:      "Hermes Processing <" + process.env.MAIL_TO + ">",
+                cc:      "Admin <" + process.env.MAIL_CC + ">",
+                subject: "Final Tab Confirmation for " + request.body.phoneNumber
+            }, function(err, message) {
+                console.log(err || message);
+            });
+
+            // Twilio code for SMS
+            // thanks http://www.synchrosinteractive.com/blog/9-nodejs/49-send-sms-through-twilio-from-nodejs
+
+            var sendSMS = function(opt, callback) {
+                var accountSid = process.env.TWILIO_ACCOUNT_SID,
+                    authToken = process.env.TWILIO_AUTH_TOKEN,
+                    apiVersion = '2010-04-01',
+                    uri = '/'+apiVersion+'/Accounts/'+accountSid+'/SMS/Messages',
+                    host = 'api.twilio.com',
+                    fullURL = 'https://'+accountSid+':'+authToken+'@'+host+uri,
+                    From = opt.From,
+                    To = opt.To,
+                    Body = opt.Body;
+
+                console.log(accountSid + ", " + authToken);
+             
+                rest.post(fullURL, {
+                    data: { From:From, To:To, Body:Body }
+                }).addListener('complete', function(data, response) {
+                    console.log(data);
+                    console.log(response);
+                });
+            };
+
+            // object sent to Twilio for SMS
+            var smsContents = {
+                From : "+19362284585",
+                To : "+" + request.body.phoneNumber,
+                Body : "HERMES PAYMENT CONFIRMATION FOR " + request.body.phoneNumber + ": Total: $" + orderCost.toFixed(2) + ". Thank you for your patronage!"
+            };
+            console.log(smsContents);
+
+            var successFunc = function() {
+                console.log("Success!");
+            };
+
+            sendSMS(smsContents, successFunc);
 
             if (request.xhr) {
                 response.json({
